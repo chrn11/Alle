@@ -7,13 +7,34 @@ import * as cheerio from 'cheerio';
 import type { Email, NewEmail } from "@/types";
 
 
+/**
+ * JSON-safe string escaping utility
+ * Properly escapes special characters for JSON strings
+ */
+function escapeJsonString(str: string): string {
+    return str
+        .replace(/\\/g, '\\\\')   // Backslash must be first
+        .replace(/"/g, '\\"')      // Double quotes
+        .replace(/\n/g, '\\n')     // Newlines
+        .replace(/\r/g, '\\r')     // Carriage returns
+        .replace(/\t/g, '\\t');    // Tabs
+}
+
+/**
+ * Advanced template replacement with JSON-safe variable substitution
+ * Supports {variable} syntax and handles special characters properly
+ * 
+ * @param template - Template string with {variable} placeholders
+ * @param email - Email object containing the values to substitute
+ * @returns Template with variables replaced and special characters escaped for JSON safety
+ */
 function replaceTemplateAdvanced(template: string, email: Email): string {
     return template.replace(/{(\w+)}/g, (match, key) => {
         const value = email[key as keyof Email];
         if (value === null || value === undefined) {
             return '';
         }
-        return JSON.stringify(String(value)).slice(1, -1);
+        return escapeJsonString(String(value));
     });
 }
 
